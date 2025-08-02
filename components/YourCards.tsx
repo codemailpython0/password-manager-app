@@ -9,18 +9,29 @@ import { Eye, EyeOff } from "lucide-react"
 import toast from "react-hot-toast"
 import { useUser } from "@clerk/nextjs"
 
+// ✅ Define CardType type
+type CardType = {
+  id: string
+  card_number: string
+  expiry: string
+  cvv: string
+  user_id: string
+}
+
 export default function YourCards() {
   const { user } = useUser()
-  const [cards, setCards] = useState<any[]>([])
+  const [cards, setCards] = useState<CardType[]>([]) // ✅ using CardType
   const [revealedCardId, setRevealedCardId] = useState<string | null>(null)
+
+  // ✅ Fetch only the logged-in user's cards
   const fetchCards = async () => {
     const { data, error } = await supabase
       .from("cards")
       .select("*")
-      .eq("user_id", user?.id)  // ✅ fetch only this user’s data
+      .eq("user_id", user?.id)
       .order("inserted_at", { ascending: false })
 
-    if (!error) setCards(data || [])
+    if (!error) setCards(data as CardType[] || [])
   }
 
   useEffect(() => {
@@ -29,7 +40,7 @@ export default function YourCards() {
     }
   }, [user])
 
-
+  // ✅ Delete a card
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from("cards").delete().eq("id", id)
     if (!error) {
@@ -38,11 +49,12 @@ export default function YourCards() {
     }
   }
 
+  // ✅ Reveal/Hide card number + CVV
   const toggleReveal = (id: string) => {
     setRevealedCardId(revealedCardId === id ? null : id)
   }
 
-  // ✅ If not logged in → show message
+  // ✅ Show sign-in message if user is not logged in
   if (!user) {
     return (
       <Card className="bg-card border border-border">
@@ -68,14 +80,20 @@ export default function YourCards() {
           <TableBody>
             {cards.map((card) => (
               <TableRow key={card.id}>
+                {/* ✅ Mask card number unless revealed */}
                 <TableCell>
                   {revealedCardId === card.id
                     ? card.card_number
                     : `**** **** **** ${card.card_number.slice(-4)}`}
                 </TableCell>
+
                 <TableCell>{card.expiry}</TableCell>
+
+                {/* ✅ Mask CVV unless revealed */}
                 <TableCell>{revealedCardId === card.id ? card.cvv : "***"}</TableCell>
+
                 <TableCell className="flex gap-2 justify-end">
+                  {/* 👁 Reveal/Hide button */}
                   <Button
                     size="icon"
                     variant="outline"
@@ -87,6 +105,8 @@ export default function YourCards() {
                       <Eye className="h-4 w-4" />
                     )}
                   </Button>
+
+                  {/* 🗑 Delete button */}
                   <Button
                     variant="destructive"
                     size="sm"
