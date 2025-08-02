@@ -13,13 +13,6 @@ export default function YourCards() {
   const { user } = useUser()
   const [cards, setCards] = useState<any[]>([])
   const [revealedCardId, setRevealedCardId] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (user) {
-      fetchCards()
-    }
-  }, [user])
-
   const fetchCards = async () => {
     const { data, error } = await supabase
       .from("cards")
@@ -29,6 +22,13 @@ export default function YourCards() {
 
     if (!error) setCards(data || [])
   }
+
+  useEffect(() => {
+    if (user) {
+      fetchCards()
+    }
+  }, [user])
+
 
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from("cards").delete().eq("id", id)
