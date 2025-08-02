@@ -35,6 +35,10 @@ const formSchema = z.object({
 
 export default function AddCard() {
   const { user } = useUser()
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: { cardNumber: "", expiry: "", cvv: "" },
+  })
 
   // ✅ If not logged in → show sign-in button instead of form
   if (!user) {
@@ -49,11 +53,6 @@ export default function AddCard() {
       </Card>
     )
   }
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: { cardNumber: "", expiry: "", cvv: "" },
-  })
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     const { error } = await supabase.from("cards").insert([
