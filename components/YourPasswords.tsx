@@ -13,13 +13,6 @@ export default function YourPasswords() {
   const { user } = useUser()
   const [passwords, setPasswords] = useState<any[]>([])
   const [revealed, setRevealed] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (user) {
-      fetchPasswords()
-    }
-  }, [user])
-
   const fetchPasswords = async () => {
     const { data, error } = await supabase
       .from("passwords")
@@ -29,6 +22,13 @@ export default function YourPasswords() {
 
     if (!error) setPasswords(data || [])
   }
+
+  useEffect(() => {
+    if (user) {
+      fetchPasswords()
+    }
+  }, [user])
+
 
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from("passwords").delete().eq("id", id)
